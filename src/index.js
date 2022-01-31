@@ -5,11 +5,12 @@ import "antd/dist/antd.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "font-awesome/css/font-awesome.min.css";
 import "bootstrap-css-only/css/bootstrap.min.css";
-import App from "./App";
+import App from "./Components/App";
 import reportWebVitals from "./reportWebVitals";
 import { init } from "d2";
 import {HashRouter} from "react-router-dom";
 import { Provider } from '@dhis2/app-runtime'
+import Navigation from "./Components/Navigation";
 
 const basicAuth = "Basic " + btoa("ahmed:Atwabi@20");
 
@@ -36,7 +37,7 @@ const withBaseUrl = (baseUrl) => {
     ReactDOM.render(
         <Provider config={appConfig}>
             <HashRouter>
-                <App/>
+                <Navigation/>
             </HashRouter>
         </Provider>
         , document.getElementById("root"));
