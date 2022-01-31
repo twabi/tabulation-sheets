@@ -2,6 +2,7 @@ import React, {Fragment, useState} from "react";
 import {getInstance} from "d2";
 import {Switch, Route} from "react-router-dom";
 import Analysis from "./Analysis";
+import AnalysisForm from "./AnalysisForm";
 
 var arrayToTree = require("array-to-tree");
 const App = (props) => {
@@ -11,6 +12,7 @@ const App = (props) => {
   const [D2, setD2] = React.useState();
   const [orgUnits, setOrgUnits] = React.useState([]);
   const [periodTypes, setPeriodTypes] = React.useState([]);
+  const [treeMarkets, setTreeMarkets] = React.useState([]);
 
 
   React.useEffect(() => {
@@ -21,8 +23,10 @@ const App = (props) => {
       const cropPoint = "dataStore/crops/crops";
       const orgEndpoint = "organisationUnits.json?fields=id,name&paging=false";
       const periodPoint = "periodTypes.json"
+      const marketsEndPoint = "organisationUnitGroups/Lp9RVPodv0V.json?fields=organisationUnits[id,name,level,ancestors[id,name,level,parent]]";
 
-      //get the indicator groups from their endpoint
+
+        //get the indicator groups from their endpoint
       d2.Api.getApi().get(groupPoint)
           .then((response) => {
             //console.log(response.users);
@@ -30,7 +34,7 @@ const App = (props) => {
           })
           .catch((error) => {
             console.log(error);
-            alert("An error occurred: " + error);
+            //alert("An error occurred: " + error);
           });
 
       //get all the crops available in the system
@@ -41,7 +45,7 @@ const App = (props) => {
           })
           .catch((error) => {
             console.log(error);
-            alert("An error occurred: " + error);
+            //alert("An error occurred: " + error);
           });
 
       d2.Api.getApi().get(periodPoint)
@@ -50,7 +54,7 @@ const App = (props) => {
           })
           .catch((error) => {
             console.log(error);
-            alert("An error occurred: " + error);
+            //alert("An error occurred: " + error);
           });
 
       d2.Api.getApi().get(orgEndpoint)
@@ -85,6 +89,65 @@ const App = (props) => {
             console.log(error);
             //alert("An error occurred: " + error);
           });
+
+      d2.Api.getApi().get(marketsEndPoint)
+          .then((response) => {
+              console.log(response.organisationUnits);
+
+              const tempArray = []
+              response.organisationUnits.map((item) => {
+                  tempArray.push({"id" : item.id, "label" : item.name})
+              });
+              setTreeMarkets(tempArray);
+
+
+              //var tempVar = {};
+              var anotherArray = [];
+              response.organisationUnits.map((item, index) => {
+                  item.title = item.name;
+                  item.value = item.name.replace(/ /g, "") + "-" + index;
+                  item.ancestors.map((ancestor, number) => {
+
+                      if(ancestor.level === 3){
+                          item.parent = ancestor.id
+                          ancestor.parent = ""
+                          ancestor.title = ancestor.name;
+                          ancestor.value = ancestor.name.replace(/ /g, "") + "-" + (index+number);
+                          anotherArray.push(ancestor);
+                      } else if(ancestor.level === 1){
+                          ancestor.parent = undefined;
+                          ancestor.title = ancestor.name;
+                          ancestor.value = ancestor.name.replace(/ /g, "") + "-" + (index+number);
+                          //tempVar = ancestor;
+                      }
+                  });
+                  if(item.parent != null){
+                      //console.log(item.parent.id)
+                      //item.parent = item.parent.id
+                  } else {
+                      item.parent = undefined
+                  }
+              });
+
+              anotherArray = anotherArray.slice().filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i);
+
+              response.organisationUnits = response.organisationUnits.concat(anotherArray);
+              //response.organisationUnits.push(tempVar);
+
+              //do the array-to-tree thing using the parent and id fields in each org unit
+              var tree = arrayToTree(response.organisationUnits, {
+                  parentProperty: 'parent',
+                  customID: 'id'
+              });
+
+              setTreeMarkets(tree);
+              console.log(tree);
+
+          })
+          .catch((error) => {
+              console.log(error);
+              //alert("An error occurred: " + error);
+          });
     });
 
   }, [props]);
@@ -94,11 +157,13 @@ const App = (props) => {
       <Fragment>
         <Switch>
           <Route path="/"  render={(props) => (
-              <Analysis {...props}
-                        d2={D2}
-                        orgUnits={orgUnits}
-                        groupSets={groupSets}
-                        crops={crops}
+              <AnalysisForm {...props}
+                    d2={D2}
+                    orgUnits={orgUnits}
+                    groupSets={groupSets}
+                    periodTypes={periodTypes}
+                    markets={treeMarkets}
+                    crops={crops}
               />
           )} exact/>
         </Switch>
