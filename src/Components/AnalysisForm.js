@@ -19,8 +19,20 @@ import Header from "@dhis2/d2-ui-header-bar";
 const AnalysisForm = (props) => {
 
     var orgUnitFilters = ["Filter By", "Markets"];
+    var periodSwitch = ["Fixed Periods", "Relative Periods"];
     //const basicAuth = "Basic " + btoa("atwabi:@Itwabi1234");
+    //https://www.namis.org/namis1/api/29/analytics.json?dimension=pe:${pe}&dimension=ou:${ouID}&filter=dx:${dxID}&displayProperty=NAME&outputIdScheme=NAME`
+    //
 
+    var weeks = [ "THIS_WEEK", "LAST_WEEK", "LAST_4_WEEKS", "LAST_12_WEEKS", "LAST_52_WEEKS"];
+    var quarters = ["THIS_QUARTER", "LAST_QUARTER", "QUARTERS_THIS_YEAR", "QUARTERS_LAST_YEAR", "LAST_4_QUARTERS"];
+    var bimonths = ["THIS_BIMONTH", "LAST_BIMONTH", "LAST_6_BIMONTHS"];
+    var months = ["THIS_MONTH", "LAST_MONTH", "LAST_3_MONTHS", "MONTHS_THIS_YEAR",  "MONTHS_LAST_YEAR", "LAST_12_MONTHS"];
+    //var array2 = ["Weeks", "Months", "Years", "Quarters", "Financial Years", "Bi-Months", "Six-Months"];
+    var sixmonths = ["THIS_SIX_MONTH", "LAST_SIX_MONTH", "LAST_2_SIXMONTHS"];
+    var years = ["THIS_YEAR", "LAST_YEAR", "LAST_5_YEARS"];
+
+    var relativePeriods = weeks.concat(months).concat(bimonths).concat(quarters).concat(sixmonths).concat(years);
     const [showLoading, setShowLoading] = useState(false);
     const [orgUnits, setOrgUnits] = useState([]);
     const [groupSets, setGroupSets] = useState([]);
@@ -37,6 +49,8 @@ const AnalysisForm = (props) => {
     const [message, setMessage] = useState("");
     const [periodTypes, setPeriodTypes] = useState([]);
     const [showLoad, setShowLoad] = useState(false);
+    const [switchFixed, setSwitchFixed] = useState(false);
+    const [activePeriod, setActivePeriod] = useState(periodSwitch[2]);
 
     getInstance().then(d2 =>{
         setD2(d2);
@@ -118,6 +132,10 @@ const AnalysisForm = (props) => {
     }
 
 
+    const handlePeriodSwitch = (value) => {
+        setActivePeriod(value);
+    }
+
     const handleOrgFilter = (value) => {
         setOrgFilter(value);
         if(value === "Markets"){
@@ -140,6 +158,16 @@ const AnalysisForm = (props) => {
         <Menu>
             {orgUnitFilters.map((item, index) => (
                 <Menu.Item key={index} onClick={()=>{handleOrgFilter(item)}}>
+                    {item}
+                </Menu.Item>
+            ))}
+        </Menu>
+    );
+
+    const periodMenu = (
+        <Menu>
+            {["Switch To", "Fixed Periods", "Relative Periods"].map((item, index) => (
+                <Menu.Item key={index} onClick={()=>{handlePeriodSwitch(item)}}>
                     {item}
                 </Menu.Item>
             ))}
@@ -189,7 +217,7 @@ const AnalysisForm = (props) => {
                                             <label className="grey-text ml-2">
                                                 <strong>Select Indicator GroupSet</strong>
                                             </label>
-                                            <Select placeholder="select program option"
+                                            <Select placeholder="select indicator group set option"
                                                     style={{ width: '100%' }}
                                                     size="large"
                                                     className="mt-2"
@@ -253,10 +281,34 @@ const AnalysisForm = (props) => {
 
                                         </div>
                                     </MDBCol>
-                                </MDBRow>
+                                    <MDBCol>
+                                        <div className="text-left my-3 d-flex flex-column">
+                                            <label className="grey-text ml-2">
+                                                <strong>Select Period</strong>
+                                                {
+                                                    <Dropdown overlay={periodMenu} className="ml-3">
+                                                        <Button size="small">{activePeriod} <DownOutlined /></Button>
+                                                    </Dropdown>
+                                                }
+                                            </label>
+                                            <Select placeholder="select Period option"
+                                                    style={{ width: '100%' }}
+                                                    size="large"
+                                                    className="mt-2"
+                                                    showSearch
+                                                    optionFilterProp="children"
+                                                    filterOption={(input, option) =>
+                                                        option.children?.toLowerCase().indexOf(input.toLowerCase()) >= 0 || false
+                                                    }
+                                                    onChange={handleProgram}>
+                                                {relativePeriods.map((item, index) => (
+                                                    <Select.Option key={index} value={item}>{item}</Select.Option>
+                                                ))}
 
-                                <MDBRow className="mt-4">
+                                            </Select>
 
+                                        </div>
+                                    </MDBCol>
                                 </MDBRow>
 
                             </MDBContainer>
