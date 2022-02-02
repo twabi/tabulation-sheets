@@ -14,6 +14,9 @@ import {Select, Button, Dropdown, Menu, TreeSelect, Modal, Spin} from "antd";
 import {getInstance} from "d2";
 import {DownOutlined} from "@ant-design/icons";
 import Header from "@dhis2/d2-ui-header-bar";
+import { DatePicker, TimePicker, Space } from 'antd';
+
+const { Option } = Select;
 
 
 const AnalysisForm = (props) => {
@@ -50,7 +53,8 @@ const AnalysisForm = (props) => {
     const [periodTypes, setPeriodTypes] = useState([]);
     const [showLoad, setShowLoad] = useState(false);
     const [switchFixed, setSwitchFixed] = useState(false);
-    const [activePeriod, setActivePeriod] = useState(periodSwitch[2]);
+    const [activePeriod, setActivePeriod] = useState(periodSwitch[1]);
+    const [type, setType] = useState('date');
 
     getInstance().then(d2 =>{
         setD2(d2);
@@ -71,6 +75,16 @@ const AnalysisForm = (props) => {
         setTreeMarkets(props.markets);
 
     },[props]);
+
+    function PickerWithType({ type, onChange }) {
+        return <DatePicker style={{ width: '100%' }}
+                           size="large"
+                           className="mt-2" picker={type} onChange={onChange} />;
+    }
+
+    function getPickerValue(value) {
+        console.log(value);
+    }
 
     const handle = (value, label, extra) => {
         setSearchValue(value)
@@ -166,7 +180,7 @@ const AnalysisForm = (props) => {
 
     const periodMenu = (
         <Menu>
-            {["Switch To", "Fixed Periods", "Relative Periods"].map((item, index) => (
+            {periodSwitch.map((item, index) => (
                 <Menu.Item key={index} onClick={()=>{handlePeriodSwitch(item)}}>
                     {item}
                 </Menu.Item>
@@ -291,21 +305,42 @@ const AnalysisForm = (props) => {
                                                     </Dropdown>
                                                 }
                                             </label>
-                                            <Select placeholder="select Period option"
-                                                    style={{ width: '100%' }}
-                                                    size="large"
-                                                    className="mt-2"
-                                                    showSearch
-                                                    optionFilterProp="children"
-                                                    filterOption={(input, option) =>
-                                                        option.children?.toLowerCase().indexOf(input.toLowerCase()) >= 0 || false
-                                                    }
-                                                    onChange={handleProgram}>
-                                                {relativePeriods.map((item, index) => (
-                                                    <Select.Option key={index} value={item}>{item}</Select.Option>
-                                                ))}
+                                            {
+                                                activePeriod === "Relative Periods" ?
+                                                    <Select placeholder="select Period option"
+                                                            style={{ width: '100%' }}
+                                                            size="large"
+                                                            className="mt-2"
+                                                            showSearch
+                                                            optionFilterProp="children"
+                                                            filterOption={(input, option) =>
+                                                                option.children?.toLowerCase().indexOf(input.toLowerCase()) >= 0 || false
+                                                            }
+                                                            onChange={handleProgram}>
+                                                        {relativePeriods.map((item, index) => (
+                                                            <Select.Option key={index} value={item}>{item}</Select.Option>
+                                                        ))}
 
-                                            </Select>
+                                                    </Select>
+                                                    :
+                                                    <Space>
+                                                        <Select value={type} style={{ width: '100%' }}
+                                                                size="large"
+                                                                className="mt-2" onChange={setType}>
+                                                            <Option value="date">Date</Option>
+                                                            <Option value="week">Week</Option>
+                                                            <Option value="month">Month</Option>
+                                                            <Option value="quarter">Quarter</Option>
+                                                            <Option value="year">Year</Option>
+                                                        </Select>
+                                                        <PickerWithType style={{ width: '100%' }}
+                                                                        size="large"
+                                                                        className="mt-2"
+                                                                        type={type} onChange={value => {
+                                                            getPickerValue(value);
+                                                        }} />
+                                                    </Space>
+                                            }
 
                                         </div>
                                     </MDBCol>
