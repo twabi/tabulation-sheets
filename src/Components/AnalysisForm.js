@@ -15,10 +15,10 @@ import {getInstance} from "d2";
 import {DownOutlined} from "@ant-design/icons";
 import Header from "@dhis2/d2-ui-header-bar";
 import { DatePicker, TimePicker, Space } from 'antd';
+import use from "use";
 
 const { Option } = Select;
-
-
+const moment = require('moment');
 const AnalysisForm = (props) => {
 
     var orgUnitFilters = ["Filter By", "Markets"];
@@ -40,7 +40,7 @@ const AnalysisForm = (props) => {
     const [orgUnits, setOrgUnits] = useState([]);
     const [groupSets, setGroupSets] = useState([]);
     const [searchValue, setSearchValue] = useState();
-    const [selectedProgram, setSelectedProgram] = useState(null);
+    const [selectedGroup, setSelectedGroup] = useState(null);
     const [orgFilter, setOrgFilter] = useState(orgUnitFilters[0]);
     const [choseFilter, setChoseFilter] = useState(false);
     const [treeMarkets, setTreeMarkets] = useState(null);
@@ -55,18 +55,13 @@ const AnalysisForm = (props) => {
     const [switchFixed, setSwitchFixed] = useState(false);
     const [activePeriod, setActivePeriod] = useState(periodSwitch[1]);
     const [type, setType] = useState('date');
+    const [selectedOrgUnit, setSelectedOrgUnit] = useState();
+    const [selectedPeriod, setSelectedPeriod] = useState();
+    //const [selectedRelative, setSelectedRelative] = useState();
 
     getInstance().then(d2 =>{
         setD2(d2);
     });
-
-    const toggle = () => {
-        setModal(!modal)
-    }
-
-    const toggleAlert = () => {
-        setAlertModal(!alertModal);
-    }
 
     useEffect(() => {
         setOrgUnits(props.orgUnits);
@@ -83,7 +78,7 @@ const AnalysisForm = (props) => {
     }
 
     function getPickerValue(value) {
-        console.log(value);
+        setSelectedPeriod(value);
     }
 
     const handle = (value, label, extra) => {
@@ -91,8 +86,10 @@ const AnalysisForm = (props) => {
     };
 
     const onSelect = (value, node) => {
-        //setSelectedOrgUnit(node);
+        console.log(node);
+        setSelectedOrgUnit(node);
 
+        /*
         var children = extractChildren(node)
         var tempArray = [];
         if(children === undefined){
@@ -104,6 +101,8 @@ const AnalysisForm = (props) => {
             //console.log(flat)
             setFlattenedUnits(flat);
         }
+
+         */
     };
 
     let extractChildren = x => x.children;
@@ -119,9 +118,10 @@ const AnalysisForm = (props) => {
 
     const onSelectTree = (value, node) => {
         //setOrgUnit(selectedOrgUnit => [...selectedOrgUnit, node]);
-        //setSelectedOrgUnit(node);
+        setSelectedOrgUnit(node);
         console.log(node);
 
+        /*
         var children = extractChildren(node);
 
         if(children === undefined){
@@ -132,16 +132,21 @@ const AnalysisForm = (props) => {
             //console.log(flat)
             setFlattenedUnits(flat);
         }
+
+         */
     };
 
     const handleProgram = selectedOption => {
         console.log(selectedOption);
-        setSelectedProgram(selectedOption);
+        setSelectedGroup(selectedOption);
     };
 
 
-    const handleDeletion = () => {
+    const handleAnalyse = () => {
 
+        console.log(selectedOrgUnit);
+        console.log(selectedGroup);
+        console.log(selectedPeriod);
 
     }
 
@@ -207,20 +212,6 @@ const AnalysisForm = (props) => {
                             {groupSets.length === 0 ? <div className="spinner-border mx-2 indigo-text spinner-border-sm" role="status">
                                 <span className="sr-only">Loading...</span>
                             </div> : null}
-
-                            <MDBContainer>
-                                <MDBModal isOpen={modal} toggle={toggle} centered>
-                                    <MDBModalHeader toggle={toggle}>Confirmation</MDBModalHeader>
-                                    <MDBModalBody>
-                                        All the enrollments for the chosen orgUnit(and it's children) will be deleted.
-                                        Are you sure you want to delete?
-                                    </MDBModalBody>
-                                    <MDBModalFooter>
-                                        <MDBBtn color="secondary" className="mx-1" onClick={toggle}>Cancel</MDBBtn>
-                                        <MDBBtn color="primary" className="mx-1" onClick={handleDeletion}>Delete</MDBBtn>
-                                    </MDBModalFooter>
-                                </MDBModal>
-                            </MDBContainer>
 
                             <hr/>
 
@@ -350,7 +341,7 @@ const AnalysisForm = (props) => {
 
                             <div className="text-center py-4 mt-2">
 
-                                <MDBBtn color="primary" className="text-white">
+                                <MDBBtn color="primary" className="text-white" onClick={handleAnalyse}>
                                     Analyse{showLoading ? <div className="spinner-border mx-2 text-white spinner-border-sm" role="status">
                                     <span className="sr-only">Loading...</span>
                                 </div> : null}
