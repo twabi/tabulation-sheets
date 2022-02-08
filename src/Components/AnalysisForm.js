@@ -23,7 +23,6 @@ const AnalysisForm = (props) => {
 
     var orgUnitFilters = ["Filter By", "Markets"];
     var periodSwitch = ["Fixed Periods", "Relative Periods"];
-    //const basicAuth = "Basic " + btoa("atwabi:@Itwabi1234");
     //https://www.namis.org/namis1/api/29/analytics.json?dimension=pe:${pe}&dimension=ou:${ouID}&filter=dx:${dxID}&displayProperty=NAME&outputIdScheme=NAME`
     //
 
@@ -57,7 +56,6 @@ const AnalysisForm = (props) => {
     const [type, setType] = useState('date');
     const [selectedOrgUnit, setSelectedOrgUnit] = useState();
     const [selectedPeriod, setSelectedPeriod] = useState();
-    //const [selectedRelative, setSelectedRelative] = useState();
 
     getInstance().then(d2 =>{
         setD2(d2);
@@ -77,8 +75,29 @@ const AnalysisForm = (props) => {
                            className="mt-2" picker={type} onChange={onChange} />;
     }
 
-    function getPickerValue(value) {
-        setSelectedPeriod(value);
+
+    const handlePeriods = (value) => {
+        if (typeof value === 'string' || value instanceof String){
+            setSelectedPeriod(value);
+        } else {
+            if(type === "date"){
+                console.log(moment(value).format("YYYYMMDD"));
+                setSelectedPeriod(moment(value).format("YYYYMMDD"));
+            } else if(type === "week"){
+                console.log(moment(value).format("YYYY") +"W"+ moment(value).format("WW"));
+                setSelectedPeriod(moment(value).format("YYYY") +"W"+ moment(value).format("WW"));
+            } else if(type === "month"){
+                console.log(moment(value).format("YYYYMM"));
+                setSelectedPeriod(moment(value).format("YYYYMM"));
+            } else if(type === "quarter"){
+                console.log(moment(value).format("YYYY") +"Q"+ moment(value).format("Q"));
+                setSelectedPeriod(moment(value).format("YYYY") +"Q"+ moment(value).format("Q"));
+            } else if(type === "year"){
+                console.log(moment(value).format("YYYY"));
+                setSelectedPeriod(moment(value).format("YYYY"));
+            }
+        }
+
     }
 
     const handle = (value, label, extra) => {
@@ -88,28 +107,7 @@ const AnalysisForm = (props) => {
     const onSelect = (value, node) => {
         console.log(node);
         setSelectedOrgUnit(node);
-
-        /*
-        var children = extractChildren(node)
-        var tempArray = [];
-        if(children === undefined){
-            tempArray.push(node);
-            setFlattenedUnits(tempArray)
-        } else {
-            let flat = flatten(extractChildren(node), extractChildren, node.level, node.parent)
-                .map(x => delete x.children && x);
-            //console.log(flat)
-            setFlattenedUnits(flat);
-        }
-
-         */
     };
-
-    let extractChildren = x => x.children;
-    let flatten = (children, getChildren, level, parent) => Array.prototype.concat.apply(
-        children && children.map(x => ({ ...x, level: level || 1, parent: parent || null })),
-        children && children.map(x => flatten(getChildren(x) || [], getChildren, (level || 1) + 1, x.id))
-    );
 
     const handleTree = (value, label, extra) => {
         setTreeValue(value)
@@ -120,32 +118,19 @@ const AnalysisForm = (props) => {
         //setOrgUnit(selectedOrgUnit => [...selectedOrgUnit, node]);
         setSelectedOrgUnit(node);
         console.log(node);
-
-        /*
-        var children = extractChildren(node);
-
-        if(children === undefined){
-            setFlattenedUnits([node]);
-        } else {
-            let flat = flatten(extractChildren(node), extractChildren, node.level, node.parent)
-                .map(x => delete x.children && x);
-            //console.log(flat)
-            setFlattenedUnits(flat);
-        }
-
-         */
     };
 
-    const handleProgram = selectedOption => {
-        console.log(selectedOption);
+    const handleGroup = selectedOption => {
         setSelectedGroup(selectedOption);
     };
 
 
     const handleAnalyse = () => {
 
+        var indicatorGroup = groupSets[groupSets.findIndex(x => x.id === selectedGroup)];
+
         console.log(selectedOrgUnit);
-        console.log(selectedGroup);
+        console.log(indicatorGroup);
         console.log(selectedPeriod);
 
     }
@@ -231,7 +216,7 @@ const AnalysisForm = (props) => {
                                                     filterOption={(input, option) =>
                                                         option.children?.toLowerCase().indexOf(input.toLowerCase()) >= 0 || false
                                                     }
-                                                    onChange={handleProgram}>
+                                                    onChange={handleGroup}>
                                                 {groupSets.map((item, index) => (
                                                     <Select.Option key={index} value={item.id}>{item.displayName}</Select.Option>
                                                 ))}
@@ -307,7 +292,7 @@ const AnalysisForm = (props) => {
                                                             filterOption={(input, option) =>
                                                                 option.children?.toLowerCase().indexOf(input.toLowerCase()) >= 0 || false
                                                             }
-                                                            onChange={handleProgram}>
+                                                            onChange={handlePeriods}>
                                                         {relativePeriods.map((item, index) => (
                                                             <Select.Option key={index} value={item}>{item}</Select.Option>
                                                         ))}
@@ -324,11 +309,11 @@ const AnalysisForm = (props) => {
                                                             <Option value="quarter">Quarter</Option>
                                                             <Option value="year">Year</Option>
                                                         </Select>
-                                                        <PickerWithType style={{ width: '100%' }}
+                                                        <DatePicker style={{ width: '100%' }}
                                                                         size="large"
                                                                         className="mt-2"
-                                                                        type={type} onChange={value => {
-                                                            getPickerValue(value);
+                                                                        picker={type} onChange={value => {
+                                                                            handlePeriods(value);
                                                         }} />
                                                     </Space>
                                             }
