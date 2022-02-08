@@ -21,7 +21,7 @@ const App = (props) => {
       setD2(d2);
       const groupPoint = "indicatorGroupSets.json?paging=false&fields=id,displayName,indicatorGroups[id,displayName,indicators[id,displayName]]";
       const cropPoint = "dataStore/crops/crops";
-      const orgEndpoint = "organisationUnits.json?fields=id,name&paging=false";
+      const orgEndpoint = "organisationUnits.json?paging=false&fields=name&fields=level&fields=id&fields=parent";
       const periodPoint = "periodTypes.json"
       const marketsEndPoint = "organisationUnitGroups/Lp9RVPodv0V.json?fields=organisationUnits[id,name,level,ancestors[id,name,level,parent]]";
 
@@ -59,7 +59,7 @@ const App = (props) => {
 
       d2.Api.getApi().get(orgEndpoint)
           .then((response) => {
-            console.log(response.organisationUnits)
+            console.log(response)
 
             response.organisationUnits.map((item, index) => {
               //
@@ -81,7 +81,7 @@ const App = (props) => {
               customID: 'id'
             });
 
-            //console.log(tree);
+            console.log(tree);
             setOrgUnits(tree)
 
           })

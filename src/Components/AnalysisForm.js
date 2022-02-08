@@ -57,6 +57,8 @@ const AnalysisForm = (props) => {
     const [type, setType] = useState('date');
     const [selectedOrgUnit, setSelectedOrgUnit] = useState();
     const [selectedPeriod, setSelectedPeriod] = useState();
+    const [analysisArray, setAnalysisArray] = useState([]);
+    const [columnArray, setColumnArray] = useState([]);
 
     getInstance().then(d2 =>{
         setD2(d2);
@@ -111,11 +113,11 @@ const AnalysisForm = (props) => {
         setSelectedOrgUnit(node);
     };
 
-    const gotoTable = (dataValue) => {
+    const gotoTable = (columns, indicators) => {
         history.push(
             {
                 pathname: '/analysis',
-                state: {data: dataValue, d2: D2},
+                state: {columns: columns, indicators: indicators, d2: D2},
             }
         );
     };
@@ -157,8 +159,34 @@ const AnalysisForm = (props) => {
         }
     }
 
-    const handleAnalyse = () => {
-        //gotoTable("some data");
+    function asyncFetch(indicatorArray){
+        return new Promise(resolve => {
+            var tempArray = [];
+            indicatorArray.map((indicator) => {
+                var dxID = indicator.id;
+                var pe = selectedPeriod;
+                var ouID = selectedOrgUnit.id;
+                const endpoint = `analytics.json?dimension=pe:${pe}&dimension=ou:${ouID}&filter=dx:${dxID}&displayProperty=NAME&outputIdScheme=NAME`
+
+                D2.Api.getApi().get(endpoint)
+                    .then((response) => {
+
+                        indicator.value = response.rows[0][2] ? response.rows[0][2] : 0;
+                        console.log(response.rows[0][2]);
+                        tempArray.push(indicator);
+                        resolve(tempArray);
+                        setAnalysisArray([...tempArray]);
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                        //alert("An error occurred: " + error);
+                    });
+            });
+        });
+    }
+
+    const handleAnalyse = async () => {
+        setShowLoading(true);
         var indicatorGroup = groupSets[groupSets.findIndex(x => x.id === selectedGroup)];
 
         console.log(selectedOrgUnit);
@@ -191,24 +219,11 @@ const AnalysisForm = (props) => {
             );
         });
 
-        console.log(columns);
-        console.log(indicatorArray);
+        setColumnArray(columns);
 
-        indicatorArray.map((indicator, index) => {
-            var dxID = indicator.id;
-            var pe = selectedPeriod;
-            var ouID = selectedOrgUnit.id;
-            const endpoint = `analytics.json?dimension=pe:${pe}&dimension=ou:${ouID}&filter=dx:${dxID}&displayProperty=NAME&outputIdScheme=NAME`
-
-            D2.Api.getApi().get(endpoint)
-                .then((response) => {
-                    console.log(response);
-                })
-                .catch((error) => {
-                    console.log(error);
-                    //alert("An error occurred: " + error);
-                });
-        })
+        var indicatorList = await asyncFetch(indicatorArray);
+        console.log(analysisArray);
+        gotoTable(columns, indicatorList);
 
 
     }
