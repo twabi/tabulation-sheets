@@ -15,7 +15,7 @@ import {getInstance} from "d2";
 import {DownOutlined} from "@ant-design/icons";
 import Header from "@dhis2/d2-ui-header-bar";
 import { DatePicker, TimePicker, Space } from 'antd';
-import use from "use";
+import { useHistory } from 'react-router-dom';
 
 const { Option } = Select;
 const moment = require('moment');
@@ -33,7 +33,7 @@ const AnalysisForm = (props) => {
     //var array2 = ["Weeks", "Months", "Years", "Quarters", "Financial Years", "Bi-Months", "Six-Months"];
     var sixmonths = ["THIS_SIX_MONTH", "LAST_SIX_MONTH", "LAST_2_SIXMONTHS"];
     var years = ["THIS_YEAR", "LAST_YEAR", "LAST_5_YEARS"];
-
+    const history = useHistory();
     var relativePeriods = weeks.concat(months).concat(bimonths).concat(quarters).concat(sixmonths).concat(years);
     const [showLoading, setShowLoading] = useState(false);
     const [orgUnits, setOrgUnits] = useState([]);
@@ -109,6 +109,15 @@ const AnalysisForm = (props) => {
         setSelectedOrgUnit(node);
     };
 
+    const gotoTable = (dataValue) => {
+        history.push(
+            {
+                pathname: '/analysis',
+                state: {data: dataValue, d2: D2},
+            }
+        );
+    };
+
     const handleTree = (value, label, extra) => {
         setTreeValue(value)
         //console.log(value);
@@ -132,6 +141,8 @@ const AnalysisForm = (props) => {
         console.log(selectedOrgUnit);
         console.log(indicatorGroup);
         console.log(selectedPeriod);
+
+        gotoTable("some data");
 
     }
 
