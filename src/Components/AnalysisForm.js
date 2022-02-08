@@ -39,6 +39,7 @@ const AnalysisForm = (props) => {
     const [orgUnits, setOrgUnits] = useState([]);
     const [groupSets, setGroupSets] = useState([]);
     const [searchValue, setSearchValue] = useState();
+    const [crops, setCrops] = useState([]);
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [orgFilter, setOrgFilter] = useState(orgUnitFilters[0]);
     const [choseFilter, setChoseFilter] = useState(false);
@@ -62,6 +63,7 @@ const AnalysisForm = (props) => {
     });
 
     useEffect(() => {
+        setCrops(props.crops);
         setOrgUnits(props.orgUnits);
         setPeriodTypes(props.periodTypes);
         setGroupSets(props.groupSets);
@@ -134,19 +136,6 @@ const AnalysisForm = (props) => {
     };
 
 
-    const handleAnalyse = () => {
-
-        var indicatorGroup = groupSets[groupSets.findIndex(x => x.id === selectedGroup)];
-
-        console.log(selectedOrgUnit);
-        console.log(indicatorGroup);
-        console.log(selectedPeriod);
-
-        gotoTable("some data");
-
-    }
-
-
     const handlePeriodSwitch = (value) => {
         setActivePeriod(value);
     }
@@ -166,6 +155,62 @@ const AnalysisForm = (props) => {
             setSearchValue(null);
             setTreeValue(null);
         }
+    }
+
+    const handleAnalyse = () => {
+        //gotoTable("some data");
+        var indicatorGroup = groupSets[groupSets.findIndex(x => x.id === selectedGroup)];
+
+        console.log(selectedOrgUnit);
+        console.log(indicatorGroup);
+        console.log(selectedPeriod);
+        const columns = [
+            {
+                title: 'Crops',
+                dataIndex: 'crops',
+                key: 'crops',
+            },
+            {
+                title: 'indicators',
+                dataIndex: 'indicators',
+                key: 'indicators',
+                children: []
+            }
+            ];
+
+        var indicatorArray = [];
+        indicatorGroup&&indicatorGroup.indicatorGroups.map(group => {
+            indicatorArray = indicatorArray.concat(group.indicators);
+            var title = group.displayName.split('1')[2].trim();
+            columns[1].children.push(
+                {
+                    title: title,
+                    key: title,
+                    dataIndex: title,
+                }
+            );
+        });
+
+        console.log(columns);
+        console.log(indicatorArray);
+
+        indicatorArray.map((indicator, index) => {
+            var dxID = indicator.id;
+            var pe = selectedPeriod;
+            var ouID = selectedOrgUnit.id;
+            const endpoint = `analytics.json?dimension=pe:${pe}&dimension=ou:${ouID}&filter=dx:${dxID}&displayProperty=NAME&outputIdScheme=NAME`
+
+            D2.Api.getApi().get(endpoint)
+                .then((response) => {
+                    console.log(response);
+                })
+                .catch((error) => {
+                    console.log(error);
+                    //alert("An error occurred: " + error);
+                });
+        })
+
+
     }
 
 
@@ -337,11 +382,9 @@ const AnalysisForm = (props) => {
 
                             <div className="text-center py-4 mt-2">
 
-                                <MDBBtn color="primary" className="text-white" onClick={handleAnalyse}>
-                                    Analyse{showLoading ? <div className="spinner-border mx-2 text-white spinner-border-sm" role="status">
-                                    <span className="sr-only">Loading...</span>
-                                </div> : null}
-                                </MDBBtn>
+                                <Button size="large" loading={showLoading} type="primary" className="text-white" onClick={handleAnalyse}>
+                                    Analyse
+                                </Button>
                             </div>
 
                         </MDBCardBody>
