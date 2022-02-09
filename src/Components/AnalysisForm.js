@@ -113,11 +113,18 @@ const AnalysisForm = (props) => {
         setSelectedOrgUnit(node);
     };
 
-    const gotoTable = (columns, indicators) => {
+    const gotoTable = (columns, indicators, orgUnit, period) => {
         history.push(
             {
                 pathname: '/analysis',
-                state: {columns: columns, indicators: indicators, d2: D2},
+                state: {
+                    columns: columns,
+                    indicators: indicators,
+                    d2: D2,
+                    period: period,
+                    orgUnit: orgUnit,
+                    crops: crops
+                },
             }
         );
     };
@@ -159,7 +166,7 @@ const AnalysisForm = (props) => {
         }
     }
 
-    function asyncFetch(indicatorArray){
+    function asyncAnalysis(indicatorArray){
         return new Promise(resolve => {
             var tempArray = [];
             indicatorArray.map((indicator) => {
@@ -170,9 +177,15 @@ const AnalysisForm = (props) => {
 
                 D2.Api.getApi().get(endpoint)
                     .then((response) => {
+                        var sum = 0;
+                        response.rows&&response.rows.map((row) => {
+                            console.log(row[2]);
+                            sum = sum + parseInt(row[2]);
+                        })
 
-                        indicator.value = response.rows[0][2] ? response.rows[0][2] : 0;
-                        console.log(response.rows[0][2]);
+                        indicator.value = sum ? sum : 0;
+                        console.log(response.rows);
+                        console.log(sum);
                         tempArray.push(indicator);
                         resolve(tempArray);
                         setAnalysisArray([...tempArray]);
@@ -199,7 +212,7 @@ const AnalysisForm = (props) => {
                 key: 'crops',
             },
             {
-                title: 'indicators',
+                title: 'Indicators',
                 dataIndex: 'indicators',
                 key: 'indicators',
                 children: []
@@ -221,9 +234,9 @@ const AnalysisForm = (props) => {
 
         setColumnArray(columns);
 
-        var indicatorList = await asyncFetch(indicatorArray);
+        var indicatorList = await asyncAnalysis(indicatorArray);
         console.log(analysisArray);
-        gotoTable(columns, indicatorList);
+        gotoTable(columns, indicatorList, selectedOrgUnit, selectedPeriod);
 
 
     }

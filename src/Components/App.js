@@ -40,7 +40,7 @@ const App = (props) => {
       //get all the crops available in the system
       d2.Api.getApi().get(cropPoint)
           .then((response) => {
-            //console.log(response.userRoles);
+            console.log(response);
             setCrops(response);
           })
           .catch((error) => {

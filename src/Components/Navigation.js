@@ -16,6 +16,8 @@ const Navigation = () => {
 
                 <Route path="/" render={(props) => (
                     <App {...props} />)} exact />
+                <Route path="/form" render={(props) => (
+                    <App {...props} />)} exact />
                 <Route path="/analysis" render={(props) => (
                     <Analysis {...props} />)} exact />
                 <Route path="/reports" render={(props) => (

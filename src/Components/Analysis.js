@@ -1,45 +1,52 @@
 import React, {useEffect, useState} from 'react';
 import { Table } from 'antd';
 import Header from "@dhis2/d2-ui-header-bar";
-import {MDBBox, MDBCard, MDBCardBody, MDBCardTitle, MDBCol} from "mdbreact";
-import { useLocation } from "react-router-dom";
+import {MDBBox, MDBCard, MDBCardBody, MDBCardText, MDBCardTitle, MDBCol} from "mdbreact";
+import { useLocation, useHistory } from "react-router-dom";
 import {getInstance} from "d2";
 
 
 const Analysis = () => {
+    const history = useHistory();
     const location = useLocation();
     const [D2, setD2] = useState();
     const [columns, setColumns] = useState();
     const [loading, setLoading] = useState(true);
+    const [period, setPeriod] = useState();
+    const [orgUnit, setOrgUnit] = useState();
+    const [crops, setCrops] = useState();
+    const [dataArray, setDataArray] = useState([]);
 
     useEffect(() => {
 
         if(location.state) {
-            setLoading(false);
             setD2(location.state.d2);
             setColumns(location.state.columns);
+            setPeriod(location.state.period);
+            setOrgUnit(location.state.orgUnit);
+            setCrops(location.state.crops);
             console.log(location.state.indicators);
+
+            var tempArray = []
+            //location.state.indicators&&location.state.indicators.map((indicator, index) =>{
+
+            //});
+            var cropArray = location.state.crops&&location.state.crops;
+            cropArray = cropArray.sort(function(a, b){return b.id - a.id}).reverse();
+            cropArray.map((crop, index) => {
+                tempArray.push({
+                    key: crop.id,
+                    crops: crop.name,
+                })
+            })
+
+            setDataArray([...tempArray]);
+            setLoading(false);
         }
         else {
-            getInstance().then((d2) => {
-                setD2(d2);});
+            history.push("/");
         }
-    }, [location]);
-
-    const data = [];
-    for (let i = 0; i < 50; i++) {
-        data.push({
-            key: i,
-            name: 'John Brown',
-            age: i + 1,
-            street: 'Lake Park',
-            building: 'C',
-            number: 2035,
-            companyAddress: 'Lake Street 42',
-            companyName: 'SoftLake Co',
-            gender: 'M',
-        });
-    }
+    }, [history, location]);
 
     return (
         <>
@@ -47,16 +54,26 @@ const Analysis = () => {
             <div className="d-flex justify-content-center" >
                 <MDBCol className="mb-5 mt-5" md="10">
                     <MDBCard className="mt-4">
-                        <MDBCardTitle className="text-center my-4">
-                            <>Tabulation Sheets</>
-                        </MDBCardTitle>
+                        <div className="text-center">
+                            <MDBCardTitle className="text-center my-4">
+                                <>Tabulation Sheets</>
+                            </MDBCardTitle>
+                            <MDBCardText className="text-center">
+                                Org Unit : {orgUnit&&orgUnit.name}
+                            </MDBCardText>
+                            <MDBCardText className="text-center">
+                                Period : {period}
+                            </MDBCardText>
+                        </div>
+
                         <MDBCardBody>
                             <Table
                                 columns={columns}
-                                dataSource={data}
+                                dataSource={dataArray}
                                 loading={loading}
                                 style={{overflow: "auto"}}
                                 bordered
+                                pagination={{ defaultPageSize: 52, showSizeChanger: true, pageSizeOptions: ['52', '100', '200']}}
                             />
                         </MDBCardBody>
                     </MDBCard>
