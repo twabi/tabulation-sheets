@@ -179,13 +179,13 @@ const AnalysisForm = (props) => {
                     .then((response) => {
                         var sum = 0;
                         response.rows&&response.rows.map((row) => {
-                            console.log(row[2]);
+                            //console.log(row[2]);
                             sum = sum + parseInt(row[2]);
                         })
 
                         indicator.value = sum ? sum : 0;
-                        console.log(response.rows);
-                        console.log(sum);
+                        //console.log(response.rows);
+                        //console.log(sum);
                         tempArray.push(indicator);
                         resolve(tempArray);
                         setAnalysisArray([...tempArray]);
@@ -222,6 +222,7 @@ const AnalysisForm = (props) => {
         var indicatorArray = [];
         indicatorGroup&&indicatorGroup.indicatorGroups.map(group => {
             indicatorArray = indicatorArray.concat(group.indicators);
+            console.log(group.displayName);
             var title = group.displayName.split('1')[2].trim();
             columns[1].children.push(
                 {
@@ -234,9 +235,9 @@ const AnalysisForm = (props) => {
 
         setColumnArray(columns);
 
-        var indicatorList = await asyncAnalysis(indicatorArray);
-        console.log(analysisArray);
-        gotoTable(columns, indicatorList, selectedOrgUnit, selectedPeriod);
+        //var indicatorList = await asyncAnalysis(indicatorArray);
+        //console.log(analysisArray);
+        gotoTable(columns, indicatorArray, selectedOrgUnit, selectedPeriod);
 
 
     }
