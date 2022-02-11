@@ -1,26 +1,18 @@
 import React, {useEffect, useState} from "react";
-import {
-    MDBBox,
-    MDBBtn,
-    MDBCard,
-    MDBCardBody,
-    MDBCardText,
-    MDBCardTitle,
-    MDBCol,
-    MDBContainer, MDBModal, MDBModalBody, MDBModalFooter, MDBModalHeader,
-    MDBRow,
-} from "mdbreact";
-import {Select, Button, Dropdown, Menu, TreeSelect, Modal, Spin} from "antd";
+import {MDBBox, MDBCard, MDBCardBody, MDBCardText, MDBCardTitle, MDBCol, MDBContainer, MDBRow,} from "mdbreact";
+import {Button, DatePicker, Dropdown, Menu, Select, Space, TreeSelect} from "antd";
 import {getInstance} from "d2";
 import {DownOutlined} from "@ant-design/icons";
 import Header from "@dhis2/d2-ui-header-bar";
-import { DatePicker, TimePicker, Space } from 'antd';
-import { useHistory } from 'react-router-dom';
+import {useHistory} from 'react-router-dom';
+import each from "async/each";
+import _, { map } from 'underscore';
 
 const { Option } = Select;
 const moment = require('moment');
 const AnalysisForm = (props) => {
 
+    const basicAuth = "Basic " + btoa("ahmed:Atwabi@20");
     var orgUnitFilters = ["Filter By", "Markets"];
     var periodSwitch = ["Fixed Periods", "Relative Periods"];
     //https://www.namis.org/namis1/api/29/analytics.json?dimension=pe:${pe}&dimension=ou:${ouID}&filter=dx:${dxID}&displayProperty=NAME&outputIdScheme=NAME`
@@ -59,10 +51,22 @@ const AnalysisForm = (props) => {
     const [selectedPeriod, setSelectedPeriod] = useState();
     const [analysisArray, setAnalysisArray] = useState([]);
     const [columnArray, setColumnArray] = useState([]);
-
-    getInstance().then(d2 =>{
-        setD2(d2);
-    });
+    const [dataArray, setDataArray] = useState([]);
+    const [indicatorState, setIndicatorState] = useState([]);
+    const [cropObjects, setCropObjects] = useState([]);
+    const columns = [
+        {
+            title: 'Crops',
+            dataIndex: 'crops',
+            key: 'crops',
+        },
+        {
+            title: 'Indicators',
+            dataIndex: 'indicators',
+            key: 'indicators',
+            children: []
+        }
+    ];
 
     useEffect(() => {
         setCrops(props.crops);
@@ -73,11 +77,110 @@ const AnalysisForm = (props) => {
 
     },[props]);
 
-    function PickerWithType({ type, onChange }) {
-        return <DatePicker style={{ width: '100%' }}
-                           size="large"
-                           className="mt-2" picker={type} onChange={onChange} />;
+    getInstance().then(d2 =>{
+        setD2(d2);
+    });
+
+    /*
+    var resultArray = [];
+    const fetchIndicator = function(indicator) {
+        //var tempArray = [];
+        var dxID = indicator.id;
+        var pe = selectedPeriod;
+        var ouID = selectedOrgUnit.id;
+        const endpoint = `analytics.json?dimension=pe:${pe}&dimension=ou:${ouID}&filter=dx:${dxID}&displayProperty=NAME&outputIdScheme=NAME`
+        D2.Api.getApi().get(endpoint).then((response) => {
+            //console.log(response)
+            var sum = 0;
+            response.rows&&response.rows.map((row) => {
+                sum = sum + parseInt(row[2]);
+            });
+            var object = indicator;
+            object.value = sum;
+            //resultArray.push(object);
+            //tempArray.push(indicator);
+            //setIndicatorArray(indi => [...indi, object]);
+        })
+
+    };
+
+    const createData = function(crop, indicator){
+        var dataObject = {
+            key: crop.id,
+            crops: crop.name
+        }
+
+        //console.log(columns);
+        columns[1].children.map((child) =>{
+
+            dataObject[child.title] = crop.indicators[crop.indicators.findIndex(x => (x && x.displayName.toLowerCase().replace(/\s/g, ""))
+                .includes((child.title.toLowerCase()).replace(/\s/g, "")))];
+
+            //tempArray.push(dataObject);
+            //console.log(dataObject);
+            //setDataArray(indi => [...indi, dataObject]);
+        })
     }
+
+    const fetchOut = (array) => {
+        array.map((indicator) => {
+            //each(crop.indicators, fetchIndicator);
+            each(indicator, getAnalytics);
+        });
+    }
+
+
+
+    //the function that runs the analytics api is this one, carrying with it are the parameters orgUnits etc
+    const getAnalytics = async (indicator) => {
+        var dxID = indicator.id;
+        var pe = selectedPeriod;
+        var ouID = selectedOrgUnit.id;
+        //var analysis = [];
+
+        return await fetch(`https://www.namis.org/main/api/analytics.json?dimension=pe:${pe}&dimension=ou:${ouID}&filter=dx:${dxID}&displayProperty=NAME&outputIdScheme=NAME`, {
+            method: "GET",
+            mode: "cors",
+            headers: {
+                "Authorization" : basicAuth,
+                "Content-type": "application/json",
+
+            }
+
+        }).then((response) => response.json())
+            .then((response) => {
+                var sum = 0;
+                response.rows&&response.rows.map((row) => {
+                    sum = sum + parseInt(row[2]);
+                });
+                indicator.value = sum;
+                //console.log(crop.indicators[crop.indicators.findIndex(x => x.id === indicator.id)])
+                //crop.indicator = indicator;
+                //console.log(crop)
+                console.log(indicator);
+                setIndicatorState(indi => [...indi, indicator]);
+                //setDataArray(indi => [...indi, indicator])
+                /*
+                if (_.findWhere(resultArray, crop) == null) {
+                    resultArray.push(crop);
+                    //setDataArray([...resultArray]);
+                }
+
+
+
+                //callBack(crop, indicator); //initiate the callback method
+
+
+            }).catch((error) => {
+                alert("oops an error occurred: " + error + " .Try reloading your page");
+
+            });
+
+    };
+
+*/
+
+
 
 
     const handlePeriods = (value) => {
@@ -113,7 +216,7 @@ const AnalysisForm = (props) => {
         setSelectedOrgUnit(node);
     };
 
-    const gotoTable = (columns, indicators, orgUnit, period) => {
+    const gotoTable = (columns, indicators, orgUnit, period, crops) => {
         history.push(
             {
                 pathname: '/analysis',
@@ -166,64 +269,20 @@ const AnalysisForm = (props) => {
         }
     }
 
-    function asyncAnalysis(indicatorArray){
-        return new Promise(resolve => {
-            var tempArray = [];
-            indicatorArray.map((indicator) => {
-                var dxID = indicator.id;
-                var pe = selectedPeriod;
-                var ouID = selectedOrgUnit.id;
-                const endpoint = `analytics.json?dimension=pe:${pe}&dimension=ou:${ouID}&filter=dx:${dxID}&displayProperty=NAME&outputIdScheme=NAME`
-
-                D2.Api.getApi().get(endpoint)
-                    .then((response) => {
-                        var sum = 0;
-                        response.rows&&response.rows.map((row) => {
-                            //console.log(row[2]);
-                            sum = sum + parseInt(row[2]);
-                        })
-
-                        indicator.value = sum ? sum : 0;
-                        //console.log(response.rows);
-                        //console.log(sum);
-                        tempArray.push(indicator);
-                        resolve(tempArray);
-                        setAnalysisArray([...tempArray]);
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                        //alert("An error occurred: " + error);
-                    });
-            });
-        });
-    }
-
-    const handleAnalyse = async () => {
+    const handleAnalyse = () => {
         setShowLoading(true);
         var indicatorGroup = groupSets[groupSets.findIndex(x => x.id === selectedGroup)];
 
         console.log(selectedOrgUnit);
         console.log(indicatorGroup);
         console.log(selectedPeriod);
-        const columns = [
-            {
-                title: 'Crops',
-                dataIndex: 'crops',
-                key: 'crops',
-            },
-            {
-                title: 'Indicators',
-                dataIndex: 'indicators',
-                key: 'indicators',
-                children: []
-            }
-            ];
+
 
         var indicatorArray = [];
         indicatorGroup&&indicatorGroup.indicatorGroups.map(group => {
             indicatorArray = indicatorArray.concat(group.indicators);
             console.log(group.displayName);
-            var title = group.displayName.split('1')[2].trim();
+            var title = group.displayName.split('1')[2].trim().toLowerCase();
             columns[1].children.push(
                 {
                     title: title,
@@ -233,11 +292,85 @@ const AnalysisForm = (props) => {
             );
         });
 
+        console.log(columns);
         setColumnArray(columns);
 
-        //var indicatorList = await asyncAnalysis(indicatorArray);
-        //console.log(analysisArray);
-        gotoTable(columns, indicatorArray, selectedOrgUnit, selectedPeriod);
+        var cropArray = crops.sort(function(a, b){return b.id - a.id}).reverse();
+        setCrops(cropArray);
+
+
+        var croppedIndicators = [];
+        cropArray.map((crop) => {
+            //console.log(crop.name);
+            var array = indicatorArray.filter(x => (x.displayName).replace(/\s/g, "").toLowerCase()
+                .includes(("-"+crop.name).replace(/\s/g, "").toLowerCase()))
+            if(array.length > 4){
+                array = array.filter(x => !(x.displayName).toLowerCase().includes("seed"));
+            }
+
+            array = array.filter((value, index, self) =>
+                index === self.findIndex((t) => (
+                    t.displayName === value.displayName
+                ))
+            )
+            //console.log(array);
+            var object = {crop: crop.name, indicators: array}
+            croppedIndicators.push(object);
+        });
+
+        console.log(croppedIndicators);
+
+        /*
+        croppedIndicators.map((crop) => {
+            fetchOut(crop.indicators);
+            crop.indicators.forEach((indicator) => {
+
+                getAnalytics(crop, indicator, createData)
+                    .then((r) => {
+                        //setAnalytics([...analyzed]);
+                        //console.log(indicatorArray);
+                        //setDataArray([...resultArray]);
+                        //setCropObjects([...croppedIndicators]);
+                        //console.log(croppedIndicators);
+                    }).then(() =>{
+                    //gotoTable(columns, indicatorArray, selectedOrgUnit, selectedPeriod, indicatorArray, croppedIndicators);
+                })
+
+            })
+        })
+
+        console.log(indicatorState);
+
+        waterfall([
+            function(callback) {
+                fetchOut(croppedIndicators)
+                callback(null, indicatorArray);
+            },
+            function(arg1, callback) {
+                // arg1 now equals indicatorArray and arg2 now equals 'two'
+                console.log(arg1)
+                croppedIndicators.forEach(function(cropped){
+                    cropped.indicators.map((indicator)=>{
+                        var indie = arg1[arg1.findIndex(x => (x.id === indicator.id))];
+                        indicator.value = indie.value;
+                    })
+                })
+                each(croppedIndicators, createData);
+
+                console.log(croppedIndicators);
+                callback(null, croppedIndicators);
+            }
+        ], function (err, result) {
+            // result now equals 'done'
+            console.log(result);
+            gotoTable(columns, resultArray, selectedOrgUnit, selectedPeriod, croppedIndicators);
+        });
+        //console.log(resultArray);
+
+        //console.log(JSON.stringify(croppedIndicators));
+        //
+
+         */
 
 
     }

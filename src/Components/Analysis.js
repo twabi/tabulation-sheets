@@ -1,10 +1,10 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import { Table } from 'antd';
+import React, {useEffect, useState} from 'react';
+import {Table} from 'antd';
 import Header from "@dhis2/d2-ui-header-bar";
-import {MDBBox, MDBCard, MDBCardBody, MDBCardText, MDBCardTitle, MDBCol} from "mdbreact";
-import { useLocation, useHistory } from "react-router-dom";
-import _, { map } from 'underscore';
-
+import {MDBCard, MDBCardBody, MDBCardText, MDBCardTitle, MDBCol} from "mdbreact";
+import {useHistory, useLocation} from "react-router-dom";
+import each from 'async/each';
+import waterfall from 'async/waterfall';
 
 const Analysis = () => {
     const history = useHistory();
@@ -16,6 +16,10 @@ const Analysis = () => {
     const [orgUnit, setOrgUnit] = useState();
     const [crops, setCrops] = useState();
     const [dataArray, setDataArray] = useState([]);
+    const [cropIndicators, setCropIndicators] = useState([]);
+    const [indicators, setIndicators] = useState([]);
+
+
 
 
     useEffect(() => {
@@ -25,70 +29,65 @@ const Analysis = () => {
             setColumns(location.state.columns);
             setPeriod(location.state.period);
             setOrgUnit(location.state.orgUnit);
-            var cropArray = location.state.crops&&location.state.crops;
-            cropArray = cropArray.sort(function(a, b){return b.id - a.id}).reverse();
-            setCrops(cropArray);
+            setCropIndicators(location.state.indicators);
+            setIndicators(location.state.indies);
 
-            var columnArray = location.state.columns&&location.state.columns;
-            var indicatorArray = location.state.indicators&&location.state.indicators;
+            //console.log(location.state.indicators);
+            var indieArray = location.state.indies&&location.state.indies;
+            console.log(JSON.stringify(location.state.indicators));
+            var croppedIndicators = location.state.crops&&location.state.crops;
+            console.log(croppedIndicators);
+
+            croppedIndicators.map((crop) => {
+                var dataObject = {
+                    key: crop.id,
+                    crops: crop.name
+                }
+
+                location.state.columns[1].children.map((child) =>{
+
+                    var valued = indicators[indicators.findIndex(x => (x&&x.displayName.toLowerCase().replace(/\s/g, ""))
+                        .includes((child.title.toLowerCase()).replace(/\s/g, "")))];
+                    
+                    //console.log(valued);
+
+                    dataObject[child.title] = valued&&valued.value;
+                })
+            })
+
+            /*
             var tempArray = [];
-            indicatorArray.map((indicator) => {
-                var dxID = indicator.id;
-                var pe = location.state.period;
-                var ouID = location.state.orgUnit.id;
-                const endpoint = `analytics.json?dimension=pe:${pe}&dimension=ou:${ouID}&filter=dx:${dxID}&displayProperty=NAME&outputIdScheme=NAME`
+            cropArray.map((crop) => {
+                var dataObject = {
+                    key: crop.id,
+                    crops: crop.name
+                }
 
-                location.state.d2.Api.getApi().get(endpoint)
-                    .then((response) => {
-                        var sum = 0;
-                        response.rows&&response.rows.map((row) => {
-                            sum = sum + parseInt(row[2]);
-                        })
+                //console.log(columns);
+                location.state.columns[1].children.map((child) =>{
 
-                        indicator.value = sum ? sum : 0;
-                        cropArray.map((crop) => {
+                     var valued = crop.indicators[crop.indicators.findIndex(x => (x && x.displayName.toLowerCase().replace(/\s/g, ""))
+                        .includes((child.title.toLowerCase()).replace(/\s/g, "")))];
 
-                            var dataObject = {
-                                key: crop.id,
-                                crops: crop.name
-                            }
-                            columnArray[1].children.map((child) =>{
-                                //var i = indicator.findIndex(x => (x&&x.displayName.includes(child.title))&&(x&&x.displayName.includes(crop.name)));
-                                //console.log(indicator);
-                                console.log(child.title, crop.name, indicator.displayName);
-                                var indie = (indicator.displayName.toLowerCase().includes(child.title.toLowerCase()))
-                                &&(indicator.displayName.toLowerCase().includes(crop.name.toLowerCase())) ?
-                                    indicator.value : "-";
-                                console.log(indie);
-                                dataObject[child.title] = indie;
+                    dataObject[child.title] = valued&&valued.value;
 
-                            })
-                            if (_.findWhere(tempArray, dataObject) == null) {
-                                tempArray.push(dataObject);
-                            }
-                            tempArray.push(dataObject);
-                            //console.log(dataObject)
-
-                            setDataArray([...tempArray]);
-                        })
-
-                        setLoading(false);
-                        console.log(tempArray);
-                        //tempArray.push(indicator);
-                        //setDataArray([...tempArray]);
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                        //alert("An error occurred: " + error);
-                    });
-                //setDataArray([...tempArray]);
+                    tempArray.push(dataObject);
+                    //console.log(dataObject);
+                    setDataArray(indi => [...indi, dataObject]);
+                })
+                
             });
+
+            console.log(tempArray);
+
+             */
+            
 
         }
         else {
             history.push("/");
         }
-    }, [history, location]);
+    }, [cropIndicators, history, indicators, location]);
 
 
     return (
