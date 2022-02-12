@@ -266,12 +266,6 @@ const AnalysisForm = (props) => {
         }
     }
 
-    const Analysis = () => {
-
-
-
-    }
-
     const handleAnalyse = () => {
         setShowLoading(true);
         var indicatorGroup = groupSets[groupSets.findIndex(x => x.id === selectedGroup)];

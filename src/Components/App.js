@@ -29,7 +29,7 @@ const App = (props) => {
         //get the indicator groups from their endpoint
       d2.Api.getApi().get(groupPoint)
           .then((response) => {
-            //console.log(response.users);
+            console.log(response.indicatorGroupSets);
             setGroupSets(response.indicatorGroupSets);
           })
           .catch((error) => {

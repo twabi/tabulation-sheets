@@ -68,7 +68,7 @@ const Analysis = () => {
 
                     dataObject[indicator.title] = indicator.value;
                 })
-                console.log(dataObject);
+                //console.log(dataObject);
                 tempArray.push(dataObject);
                 setDataArray([...tempArray]);
                 setLoading(false);
@@ -136,7 +136,7 @@ const Analysis = () => {
                                 loading={loading}
                                 style={{overflow: "auto"}}
                                 bordered
-                                pagination={{ defaultPageSize: 52, showSizeChanger: true, pageSizeOptions: ['25', '50', '75']}}
+                                pagination={{ defaultPageSize: 25, showSizeChanger: true, pageSizeOptions: ['25', '50', '75']}}
                             />
                         </MDBCardBody>
                     </MDBCard>
