@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {Table} from 'antd';
+import {Input, Table} from 'antd';
 import Header from "@dhis2/d2-ui-header-bar";
 import {MDBCard, MDBCardBody, MDBCardText, MDBCardTitle, MDBCol} from "mdbreact";
 import {useHistory, useLocation} from "react-router-dom";
 import axios from "axios";
 
+const { Search } = Input;
 const Analysis = () => {
     const basicAuth = "Basic " + btoa("ahmed:Atwabi@20");
     const history = useHistory();
@@ -18,8 +19,10 @@ const Analysis = () => {
     const [dataArray, setDataArray] = useState([]);
     const [cropIndicators, setCropIndicators] = useState([]);
     const [indicators, setIndicators] = useState([]);
+    const [tempDataArray, setTempDataArray] = useState([]);
 
-    const getGithubData = (indicators) => {
+
+    const getIndicatorData = (indicators) => {
         Promise.all(indicators.map((indicator) => axios.get(indicator.endpoint, {
             auth: {
                 username: "ahmed",
@@ -79,12 +82,22 @@ const Analysis = () => {
                 tempArray.push(dataObject);
                 console.log(tempArray);
                 setDataArray([...tempArray]);
+                setTempDataArray([...tempArray]);
                 setLoading(false);
 
             })
 
         });
     }
+
+    const handleSearch = searchText => {
+        const filteredEvents = tempDataArray.filter(({ crops }) => {
+            crops = crops&&crops.toLowerCase();
+            return crops&&crops.includes(searchText);
+        });
+
+        setDataArray(filteredEvents);
+    };
 
 
     useEffect(() => {
@@ -109,7 +122,7 @@ const Analysis = () => {
                 })
             })
 
-            getGithubData(indes);
+            getIndicatorData(indes);
 
 
         }
@@ -138,6 +151,10 @@ const Analysis = () => {
                         </div>
 
                         <MDBCardBody>
+                            <div className="d-flex justify-content-right">
+                                <Search height={40}
+                                        placeholder="Search crops" className="w-25 float-right"   onChange={e => handleSearch(e.target.value)} />
+                            </div>
                             <Table
                                 columns={columns}
                                 dataSource={dataArray}
