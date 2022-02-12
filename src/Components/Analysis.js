@@ -3,8 +3,6 @@ import {Table} from 'antd';
 import Header from "@dhis2/d2-ui-header-bar";
 import {MDBCard, MDBCardBody, MDBCardText, MDBCardTitle, MDBCol} from "mdbreact";
 import {useHistory, useLocation} from "react-router-dom";
-import each from 'async/each';
-import waterfall from 'async/waterfall';
 import axios from "axios";
 
 const Analysis = () => {
@@ -28,7 +26,7 @@ const Analysis = () => {
                 password: "Atwabi@20"
             }
         }))).then((data)=> {
-            console.log(data);
+            //console.log(data);
             //setFollowers(rows)
             //setFollowing(followings)
             var tempArray = [];
@@ -58,18 +56,28 @@ const Analysis = () => {
                     });
                     indicator.value = sum;
 
-                    if(indicator.displayName.includes(";")){
-                        var name = indicator.displayName.split(";")[1].split("-")[0].trim().toLowerCase();
-                        indicator.title = name;
-                    } else {
-                        var name = indicator.displayName.split("-")[1].trim().toLowerCase();
-                        indicator.title = name;
+                    if(indicator.displayName.includes("T1")){
+                        if(indicator.displayName.includes("Round 2")){
+                            indicator.title = indicator.displayName.split("Round 2")[1].split("-")[0].trim().toLowerCase();
+                        } else {
+                            if(indicator.displayName.includes(";")){
+                                indicator.title = indicator.displayName.split(";")[1].split("-")[0].trim().toLowerCase();
+                            } else {
+                                indicator.title = indicator.displayName.split("-")[1].trim().toLowerCase();
+                            }
+
+                        }
+
                     }
 
+
+
+                    console.log(indicator);
                     dataObject[indicator.title] = indicator.value;
                 })
                 //console.log(dataObject);
                 tempArray.push(dataObject);
+                console.log(tempArray);
                 setDataArray([...tempArray]);
                 setLoading(false);
 

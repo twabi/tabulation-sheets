@@ -279,7 +279,16 @@ const AnalysisForm = (props) => {
         indicatorGroup&&indicatorGroup.indicatorGroups.map(group => {
             indicatorArray = indicatorArray.concat(group.indicators);
             console.log(group.displayName);
-            var title = group.displayName.split('1')[2].trim().toLowerCase();
+            if(group.displayName.includes("Tabulation")){
+                if(group.displayName.includes("Round")){
+                    var title = group.displayName.split('Round')[1].replace(/[0-9]/g, '').trim().toLowerCase();
+                } else{
+                    var title = group.displayName.split('-')[1].replace(/[0-9]/g, '').trim().toLowerCase();
+                }
+            }
+
+
+
             columns[1].children.push(
                 {
                     title: title,
