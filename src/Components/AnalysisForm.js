@@ -8,6 +8,7 @@ import {useHistory} from 'react-router-dom';
 import each from "async/each";
 import _, { map } from 'underscore';
 
+
 const { Option } = Select;
 const moment = require('moment');
 const AnalysisForm = (props) => {
@@ -15,9 +16,6 @@ const AnalysisForm = (props) => {
     const basicAuth = "Basic " + btoa("ahmed:Atwabi@20");
     var orgUnitFilters = ["Filter By", "Markets"];
     var periodSwitch = ["Fixed Periods", "Relative Periods"];
-    //https://www.namis.org/namis1/api/29/analytics.json?dimension=pe:${pe}&dimension=ou:${ouID}&filter=dx:${dxID}&displayProperty=NAME&outputIdScheme=NAME`
-    //
-
     var weeks = [ "THIS_WEEK", "LAST_WEEK", "LAST_4_WEEKS", "LAST_12_WEEKS", "LAST_52_WEEKS"];
     var quarters = ["THIS_QUARTER", "LAST_QUARTER", "QUARTERS_THIS_YEAR", "QUARTERS_LAST_YEAR", "LAST_4_QUARTERS"];
     var bimonths = ["THIS_BIMONTH", "LAST_BIMONTH", "LAST_6_BIMONTHS"];
@@ -75,14 +73,16 @@ const AnalysisForm = (props) => {
         setGroupSets(props.groupSets);
         setTreeMarkets(props.markets);
 
+
     },[props]);
 
     getInstance().then(d2 =>{
         setD2(d2);
     });
 
-    /*
     var resultArray = [];
+    /*
+
     const fetchIndicator = function(indicator) {
         //var tempArray = [];
         var dxID = indicator.id;
@@ -180,9 +180,6 @@ const AnalysisForm = (props) => {
 
 */
 
-
-
-
     const handlePeriods = (value) => {
         if (typeof value === 'string' || value instanceof String){
             setSelectedPeriod(value);
@@ -269,6 +266,12 @@ const AnalysisForm = (props) => {
         }
     }
 
+    const Analysis = () => {
+
+
+
+    }
+
     const handleAnalyse = () => {
         setShowLoading(true);
         var indicatorGroup = groupSets[groupSets.findIndex(x => x.id === selectedGroup)];
@@ -314,11 +317,26 @@ const AnalysisForm = (props) => {
                 ))
             )
             //console.log(array);
-            var object = {crop: crop.name, indicators: array}
+            var object = {id: crop.id, crop: crop.name, indicators: array}
             croppedIndicators.push(object);
         });
 
         console.log(croppedIndicators);
+        setCropObjects(croppedIndicators);
+
+
+        var pe = selectedPeriod;
+        var ouID = selectedOrgUnit.id;
+
+        croppedIndicators.map((crop) => {
+          crop.indicators.forEach((indicator) => {
+              var dxID = indicator.id;
+              indicator.endpoint = `https://www.namis.org/main/api/analytics.json?dimension=pe:${pe}&dimension=ou:${ouID}&filter=dx:${dxID}&displayProperty=NAME&outputIdScheme=NAME`
+          })
+        });
+
+        console.log(croppedIndicators);
+        gotoTable(columns, resultArray, selectedOrgUnit, selectedPeriod, croppedIndicators);
 
         /*
         croppedIndicators.map((crop) => {

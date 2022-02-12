@@ -5,8 +5,10 @@ import {MDBCard, MDBCardBody, MDBCardText, MDBCardTitle, MDBCol} from "mdbreact"
 import {useHistory, useLocation} from "react-router-dom";
 import each from 'async/each';
 import waterfall from 'async/waterfall';
+import axios from "axios";
 
 const Analysis = () => {
+    const basicAuth = "Basic " + btoa("ahmed:Atwabi@20");
     const history = useHistory();
     const location = useLocation();
     const [D2, setD2] = useState();
@@ -19,75 +21,94 @@ const Analysis = () => {
     const [cropIndicators, setCropIndicators] = useState([]);
     const [indicators, setIndicators] = useState([]);
 
+    const getGithubData = (indicators) => {
+        Promise.all(indicators.map((indicator) => axios.get(indicator.endpoint, {
+            auth: {
+                username: "ahmed",
+                password: "Atwabi@20"
+            }
+        }))).then((data)=> {
+            console.log(data);
+            //setFollowers(rows)
+            //setFollowing(followings)
+            var tempArray = [];
+            location.state.crops.map((crop) =>{
+                var cropName = (crop.crop).toLowerCase().replace(/\s/g, "");
 
+                var array = data.filter(x => (x.data.metaData.items[x.data.metaData.dimensions.dx[0]].name).replace(/\s/g, "").toLowerCase().includes(cropName))
+
+                var dataObject = {
+                    key: crop.id,
+                    crops: crop.crop
+                }
+                //console.log(cropName, crop.indicators);
+                crop.indicators.map((indicator) =>{
+                    //if(indicator.name.toLowerCase().includes(cropName))
+
+                    //var word = array[0].data.metaData.dimensions.dx[0];
+                    //console.log(word, array[0].data.metaData.items[word].name)
+
+                    var indiValue = array.filter(x => (x.data.metaData.items[x.data.metaData.dimensions.dx[0]].name).replace(/\s/g, "").toLowerCase() ===
+                        (indicator.displayName).replace(/\s/g, "").toLowerCase())
+                    //console.log(indiValue);
+
+                    var sum = 0;
+                    indiValue[0].data.rows&&indiValue[0].data.rows.map((row) => {
+                        sum = sum + parseInt(row[2]);
+                    });
+                    indicator.value = sum;
+
+                    if(indicator.displayName.includes(";")){
+                        var name = indicator.displayName.split(";")[1].split("-")[0].trim().toLowerCase();
+                        indicator.title = name;
+                    } else {
+                        var name = indicator.displayName.split("-")[1].trim().toLowerCase();
+                        indicator.title = name;
+                    }
+
+                    dataObject[indicator.title] = indicator.value;
+                })
+                console.log(dataObject);
+                tempArray.push(dataObject);
+                setDataArray([...tempArray]);
+                setLoading(false);
+
+            })
+
+        });
+    }
 
 
     useEffect(() => {
 
         if(location.state) {
+            //getGithubData();
             setD2(location.state.d2);
             setColumns(location.state.columns);
             setPeriod(location.state.period);
             setOrgUnit(location.state.orgUnit);
             setCropIndicators(location.state.indicators);
-            setIndicators(location.state.indies);
 
-            //console.log(location.state.indicators);
-            var indieArray = location.state.indies&&location.state.indies;
-            console.log(JSON.stringify(location.state.indicators));
+            console.log(location.state.columns);
+            setCrops(location.state.crops);
             var croppedIndicators = location.state.crops&&location.state.crops;
             console.log(croppedIndicators);
 
-            croppedIndicators.map((crop) => {
-                var dataObject = {
-                    key: crop.id,
-                    crops: crop.name
-                }
-
-                location.state.columns[1].children.map((child) =>{
-
-                    var valued = indicators[indicators.findIndex(x => (x&&x.displayName.toLowerCase().replace(/\s/g, ""))
-                        .includes((child.title.toLowerCase()).replace(/\s/g, "")))];
-                    
-                    //console.log(valued);
-
-                    dataObject[child.title] = valued&&valued.value;
+            var indes = [];
+            croppedIndicators.forEach(crop => {
+                crop.indicators.forEach(ind =>{
+                    indes.push(ind);
                 })
             })
 
-            /*
-            var tempArray = [];
-            cropArray.map((crop) => {
-                var dataObject = {
-                    key: crop.id,
-                    crops: crop.name
-                }
+            getGithubData(indes);
 
-                //console.log(columns);
-                location.state.columns[1].children.map((child) =>{
-
-                     var valued = crop.indicators[crop.indicators.findIndex(x => (x && x.displayName.toLowerCase().replace(/\s/g, ""))
-                        .includes((child.title.toLowerCase()).replace(/\s/g, "")))];
-
-                    dataObject[child.title] = valued&&valued.value;
-
-                    tempArray.push(dataObject);
-                    //console.log(dataObject);
-                    setDataArray(indi => [...indi, dataObject]);
-                })
-                
-            });
-
-            console.log(tempArray);
-
-             */
-            
 
         }
         else {
             history.push("/");
         }
-    }, [cropIndicators, history, indicators, location]);
+    }, [ history, location]);
 
 
     return (
@@ -115,7 +136,7 @@ const Analysis = () => {
                                 loading={loading}
                                 style={{overflow: "auto"}}
                                 bordered
-                                pagination={{ defaultPageSize: 52, showSizeChanger: true, pageSizeOptions: ['52', '100', '200']}}
+                                pagination={{ defaultPageSize: 52, showSizeChanger: true, pageSizeOptions: ['25', '50', '75']}}
                             />
                         </MDBCardBody>
                     </MDBCard>
