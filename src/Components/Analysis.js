@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {Input, Table} from 'antd';
+import {Button, Input, Table} from 'antd';
 import Header from "@dhis2/d2-ui-header-bar";
 import {MDBCard, MDBCardBody, MDBCardText, MDBCardTitle, MDBCol} from "mdbreact";
 import {useHistory, useLocation} from "react-router-dom";
 import axios from "axios";
+import {TableExport} from "tableexport";
 
 const { Search } = Input;
 const Analysis = () => {
@@ -132,6 +133,16 @@ const Analysis = () => {
     }, [ history, location]);
 
 
+    const exportXL = (tab) => {
+        var table = tab;
+        var exportData = table.getExportData();
+        console.log(exportData);
+        var csv = exportData.dataTable.csv;
+        table.export2file(csv.data, csv.mimeType, csv.filename, csv.fileExtension, csv.merges, csv.RTL, csv.sheetname);
+
+    }
+
+
     return (
         <>
             {D2 && <Header className="mb-5" d2={D2}/>}
@@ -151,13 +162,23 @@ const Analysis = () => {
                         </div>
 
                         <MDBCardBody>
-                            <div className="d-flex justify-content-right">
+                            <div className="d-flex justify-content-between">
                                 <Search height={40}
                                         placeholder="Search crops" className="w-25 float-right"   onChange={e => handleSearch(e.target.value)} />
+                                <Button type="primary" lassName="mx-1" onClick={() => {
+                                    exportXL(TableExport(document.getElementById("dataTable"), {
+                                        filename: "Tabulation sheets",
+                                        exportButtons: false,
+                                        sheetname: "Tabulation sheets",
+                                    }));
+                                }}>
+                                    Print CSV
+                                </Button>
                             </div>
                             <Table
                                 columns={columns}
                                 dataSource={dataArray}
+                                id={"dataTable"}
                                 loading={loading}
                                 style={{overflow: "auto"}}
                                 bordered

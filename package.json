@@ -26,6 +26,8 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
     "react-select": "^4.2.1",
+    "tableexport": "^5.2.0",
+    "tableexport.jquery.plugin": "^1.10.25",
     "underscore": "^1.13.2",
     "web-vitals": "^1.0.1"
   },
