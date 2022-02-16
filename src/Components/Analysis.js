@@ -56,7 +56,7 @@ const Analysis = () => {
 
                     var sum = 0;
                     indiValue[0].data.rows&&indiValue[0].data.rows.map((row) => {
-                        sum = sum + parseInt(row[2]);
+                        sum = sum + parseFloat(row[2]);
                     });
                     indicator.value = sum;
 
