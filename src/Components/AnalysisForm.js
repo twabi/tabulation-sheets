@@ -37,9 +37,6 @@ const AnalysisForm = (props) => {
     const [treeValue, setTreeValue] = useState();
     const [flattenedUnits, setFlattenedUnits] = useState([]);
     const [D2, setD2] = useState();
-    const [modal, setModal] = useState(false);
-    const [alertModal, setAlertModal] = useState(false);
-    const [message, setMessage] = useState("");
     const [periodTypes, setPeriodTypes] = useState([]);
     const [activePeriod, setActivePeriod] = useState(periodSwitch[1]);
     const [type, setType] = useState('date');

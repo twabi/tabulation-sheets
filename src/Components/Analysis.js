@@ -144,7 +144,7 @@ const Analysis = () => {
 
 
     return (
-        <>
+        <React.Fragment>
             {D2 && <Header className="mb-5" d2={D2}/>}
             <div className="d-flex justify-content-center" >
                 <MDBCol className="mb-5 mt-5" md="10">
@@ -188,7 +188,7 @@ const Analysis = () => {
                     </MDBCard>
                 </MDBCol>
             </div>
-        </>
+        </React.Fragment>
 
     )
 }

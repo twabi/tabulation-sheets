@@ -1,7 +1,6 @@
-import React, {Fragment, useState} from "react";
+import React from "react";
 import {getInstance} from "d2";
-import {Switch, Route} from "react-router-dom";
-import Analysis from "./Analysis";
+import {Router, Route} from "react-router-dom";
 import AnalysisForm from "./AnalysisForm";
 
 var arrayToTree = require("array-to-tree");
@@ -154,20 +153,23 @@ const App = (props) => {
 
 
   return (
-      <Fragment>
-        <Switch>
-          <Route path="/"  render={(props) => (
-              <AnalysisForm {...props}
-                    d2={D2}
-                    orgUnits={orgUnits}
-                    groupSets={groupSets}
-                    periodTypes={periodTypes}
-                    markets={treeMarkets}
-                    crops={crops}
-              />
-          )} exact/>
-        </Switch>
-      </Fragment>
+      <React.Fragment>
+          <Router>
+              <>
+                  <Route path="/" render={(props) => (
+                      <AnalysisForm {...props}
+                                    d2={D2}
+                                    orgUnits={orgUnits}
+                                    groupSets={groupSets}
+                                    periodTypes={periodTypes}
+                                    markets={treeMarkets}
+                                    crops={crops}
+                      />
+                  )} exact/>
+              </>
+          </Router>
+
+      </React.Fragment>
   );
 }
 
