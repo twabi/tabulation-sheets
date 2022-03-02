@@ -1,6 +1,6 @@
 import React from "react";
 import {getInstance} from "d2";
-import {Router, Route} from "react-router-dom";
+import {Switch, Route} from "react-router-dom";
 import AnalysisForm from "./AnalysisForm";
 
 var arrayToTree = require("array-to-tree");
@@ -154,8 +154,8 @@ const App = (props) => {
 
   return (
       <React.Fragment>
-          <Router>
-              <>
+          <>
+              <Switch>
                   <Route path="/" render={(props) => (
                       <AnalysisForm {...props}
                                     d2={D2}
@@ -166,8 +166,8 @@ const App = (props) => {
                                     crops={crops}
                       />
                   )} exact/>
-              </>
-          </Router>
+              </Switch>
+          </>
 
       </React.Fragment>
   );
